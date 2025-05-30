@@ -154,6 +154,7 @@ const ports = [
   { code: "HRRJK", name: "Rijeka", country: "Croatia", lat: 45.3271, lng: 14.4422 },
   { code: "RUNVS", name: "Novorossiysk", country: "Russia", lat: 44.7234, lng: 37.7689 },
   { code: "UAODS", name: "Odessa", country: "Ukraine", lat: 46.4825, lng: 30.7233 },
+  { code: "GIGIB", name: "Gibraltar", country: "Gibraltar", lat: 36.1408, lng: -5.3536 },
 ]
 
 // Vessel and cargo mapping based on Yieldstreet
