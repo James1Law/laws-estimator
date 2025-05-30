@@ -538,15 +538,24 @@ export default function VoyageEstimator() {
     if (params.has('flatRate')) setFlatRate(params.get('flatRate') || '')
     if (params.has('worldscaleYear')) setWorldscaleYear(params.get('worldscaleYear') || '')
     if (params.has('fixedDiff')) setFixedDiff(params.get('fixedDiff') || '')
-    
+
+    let restoredResults = null
     if (params.has('results')) {
       try {
-        const results = JSON.parse(params.get('results') || '{}')
-        setResults(results)
+        restoredResults = JSON.parse(params.get('results') || '{}')
+        setResults(restoredResults)
       } catch (e) {
         console.error('Failed to parse results from URL')
       }
     }
+
+    // Scroll to results if present in URL
+    setTimeout(() => {
+      if (restoredResults && resultsRef.current) {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        resultsRef.current.focus()
+      }
+    }, 200)
   }, [])
 
   return (
