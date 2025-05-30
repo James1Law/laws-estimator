@@ -8,17 +8,99 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Ship, MapPin, Fuel, DollarSign, Calculator, TrendingUp } from "lucide-react"
+import React from "react"
 
 // Sample data - in a real app this would come from APIs
 const ports = [
-  { code: "USHOU", name: "Houston", country: "USA", lat: 29.7604, lng: -95.3698 },
-  { code: "NLRTM", name: "Rotterdam", country: "Netherlands", lat: 51.9244, lng: 4.4777 },
-  { code: "SGSIN", name: "Singapore", country: "Singapore", lat: 1.2966, lng: 103.7764 },
-  { code: "AEDXB", name: "Dubai", country: "UAE", lat: 25.2048, lng: 55.2708 },
-  { code: "BRRIO", name: "Rio de Janeiro", country: "Brazil", lat: -22.9068, lng: -43.1729 },
+  // Asia
   { code: "CNSHA", name: "Shanghai", country: "China", lat: 31.2304, lng: 121.4737 },
-  { code: "JPYOK", name: "Yokohama", country: "Japan", lat: 35.4437, lng: 139.638 },
-  { code: "INMUN", name: "Mumbai", country: "India", lat: 19.076, lng: 72.8777 },
+  { code: "SGSIN", name: "Singapore", country: "Singapore", lat: 1.2966, lng: 103.7764 },
+  { code: "CNNGB", name: "Ningbo-Zhoushan", country: "China", lat: 29.8683, lng: 121.5440 },
+  { code: "CNSZX", name: "Shenzhen", country: "China", lat: 22.5431, lng: 114.0579 },
+  { code: "CNGHZ", name: "Guangzhou", country: "China", lat: 23.1291, lng: 113.2644 },
+  { code: "HKHKG", name: "Hong Kong", country: "China", lat: 22.3193, lng: 114.1694 },
+  { code: "KRINC", name: "Incheon", country: "South Korea", lat: 37.4563, lng: 126.7052 },
+  { code: "JPYOK", name: "Yokohama", country: "Japan", lat: 35.4437, lng: 139.6380 },
+  { code: "JPKOB", name: "Kobe", country: "Japan", lat: 34.6901, lng: 135.1955 },
+  { code: "TWKHH", name: "Kaohsiung", country: "Taiwan", lat: 22.6273, lng: 120.3014 },
+  { code: "MYPEN", name: "Port Klang", country: "Malaysia", lat: 3.0000, lng: 101.4000 },
+  { code: "IDTPP", name: "Tanjung Priok", country: "Indonesia", lat: -6.0850, lng: 106.8800 },
+  { code: "INMUN", name: "Mumbai", country: "India", lat: 19.0760, lng: 72.8777 },
+  { code: "INJNP", name: "Jawaharlal Nehru", country: "India", lat: 18.9490, lng: 72.9525 },
+  { code: "INCHN", name: "Chennai", country: "India", lat: 13.0827, lng: 80.2707 },
+  { code: "AEJEA", name: "Jebel Ali", country: "UAE", lat: 25.0089, lng: 55.0707 },
+  { code: "AEDXB", name: "Dubai", country: "UAE", lat: 25.2048, lng: 55.2708 },
+  { code: "SAJED", name: "Jeddah", country: "Saudi Arabia", lat: 21.5433, lng: 39.1728 },
+  { code: "QAWAK", name: "Hamad", country: "Qatar", lat: 25.2854, lng: 51.5310 },
+  { code: "KWMKU", name: "Mubarak Al-Kabeer", country: "Kuwait", lat: 29.3759, lng: 47.9774 },
+
+  // Europe
+  { code: "NLRTM", name: "Rotterdam", country: "Netherlands", lat: 51.9244, lng: 4.4777 },
+  { code: "BEANR", name: "Antwerp", country: "Belgium", lat: 51.2195, lng: 4.4024 },
+  { code: "DEHAM", name: "Hamburg", country: "Germany", lat: 53.5511, lng: 9.9937 },
+  { code: "ESVLC", name: "Valencia", country: "Spain", lat: 39.4699, lng: -0.3763 },
+  { code: "ESALG", name: "Algeciras", country: "Spain", lat: 36.1408, lng: -5.4565 },
+  { code: "GRPIR", name: "Piraeus", country: "Greece", lat: 37.9485, lng: 23.6425 },
+  { code: "ITGIT", name: "Gioia Tauro", country: "Italy", lat: 38.4467, lng: 15.9033 },
+  { code: "ITCAG", name: "Cagliari", country: "Italy", lat: 39.2238, lng: 9.1217 },
+  { code: "FRFOS", name: "Fos-sur-Mer", country: "France", lat: 43.4377, lng: 4.9446 },
+  { code: "GBFXT", name: "Felixstowe", country: "UK", lat: 51.9617, lng: 1.3512 },
+  { code: "GBLON", name: "London Gateway", country: "UK", lat: 51.5074, lng: 0.1278 },
+  { code: "GBSOU", name: "Southampton", country: "UK", lat: 50.9097, lng: -1.4044 },
+  { code: "DKCPH", name: "Copenhagen", country: "Denmark", lat: 55.6761, lng: 12.5683 },
+  { code: "SEGOT", name: "Gothenburg", country: "Sweden", lat: 57.7089, lng: 11.9746 },
+  { code: "NOOSL", name: "Oslo", country: "Norway", lat: 59.9139, lng: 10.7522 },
+  { code: "PLGDN", name: "Gdansk", country: "Poland", lat: 54.3520, lng: 18.6466 },
+  { code: "PLGDY", name: "Gdynia", country: "Poland", lat: 54.5189, lng: 18.5305 },
+  { code: "RUULU", name: "Ust-Luga", country: "Russia", lat: 59.6667, lng: 28.3000 },
+  { code: "RUKAA", name: "Kaliningrad", country: "Russia", lat: 54.7104, lng: 20.4522 },
+  { code: "TRIST", name: "Istanbul", country: "Turkey", lat: 41.0082, lng: 28.9784 },
+
+  // North America
+  { code: "USHOU", name: "Houston", country: "USA", lat: 29.7604, lng: -95.3698 },
+  { code: "USNYC", name: "New York", country: "USA", lat: 40.7128, lng: -74.0060 },
+  { code: "USLGB", name: "Long Beach", country: "USA", lat: 33.7701, lng: -118.1937 },
+  { code: "USLAX", name: "Los Angeles", country: "USA", lat: 34.0522, lng: -118.2437 },
+  { code: "USSAV", name: "Savannah", country: "USA", lat: 32.0809, lng: -81.0912 },
+  { code: "USCHS", name: "Charleston", country: "USA", lat: 32.7765, lng: -79.9311 },
+  { code: "USMIA", name: "Miami", country: "USA", lat: 25.7617, lng: -80.1918 },
+  { code: "USSEA", name: "Seattle", country: "USA", lat: 47.6062, lng: -122.3321 },
+  { code: "USTAC", name: "Tacoma", country: "USA", lat: 47.2529, lng: -122.4443 },
+  { code: "USORF", name: "Norfolk", country: "USA", lat: 36.8508, lng: -76.2859 },
+  { code: "CAVAN", name: "Vancouver", country: "Canada", lat: 49.2827, lng: -123.1207 },
+  { code: "CAMTR", name: "Montreal", country: "Canada", lat: 45.5017, lng: -73.5673 },
+  { code: "CAHAL", name: "Halifax", country: "Canada", lat: 44.6488, lng: -63.5752 },
+  { code: "MXVER", name: "Veracruz", country: "Mexico", lat: 19.1738, lng: -96.1342 },
+  { code: "MXMAN", name: "Manzanillo", country: "Mexico", lat: 19.0519, lng: -104.3158 },
+
+  // South America
+  { code: "BRRIO", name: "Rio de Janeiro", country: "Brazil", lat: -22.9068, lng: -43.1729 },
+  { code: "BRSAN", name: "Santos", country: "Brazil", lat: -23.9608, lng: -46.3339 },
+  { code: "BRSSZ", name: "Suape", country: "Brazil", lat: -8.3942, lng: -34.9432 },
+  { code: "ARBUE", name: "Buenos Aires", country: "Argentina", lat: -34.6037, lng: -58.3816 },
+  { code: "CLVAP", name: "Valparaiso", country: "Chile", lat: -33.0472, lng: -71.6127 },
+  { code: "PECLL", name: "Callao", country: "Peru", lat: -12.0464, lng: -77.0428 },
+  { code: "COBUN", name: "Buenaventura", country: "Colombia", lat: 3.8801, lng: -77.0312 },
+  { code: "ECGYE", name: "Guayaquil", country: "Ecuador", lat: -2.1894, lng: -79.8891 },
+  { code: "UYMVD", name: "Montevideo", country: "Uruguay", lat: -34.9011, lng: -56.1645 },
+
+  // Africa
+  { code: "EGALY", name: "Alexandria", country: "Egypt", lat: 31.2001, lng: 29.9187 },
+  { code: "EGPSD", name: "Port Said", country: "Egypt", lat: 31.2667, lng: 32.3000 },
+  { code: "ZADUR", name: "Durban", country: "South Africa", lat: -29.8587, lng: 31.0218 },
+  { code: "ZACPT", name: "Cape Town", country: "South Africa", lat: -33.9249, lng: 18.4241 },
+  { code: "NGAPP", name: "Apapa", country: "Nigeria", lat: 6.4541, lng: 3.3947 },
+  { code: "KEMBA", name: "Mombasa", country: "Kenya", lat: -4.0435, lng: 39.6682 },
+  { code: "TZTZA", name: "Dar es Salaam", country: "Tanzania", lat: -6.7924, lng: 39.2083 },
+  { code: "MAMAS", name: "Casablanca", country: "Morocco", lat: 33.5731, lng: -7.5898 },
+
+  // Oceania
+  { code: "AUBNE", name: "Brisbane", country: "Australia", lat: -27.4698, lng: 153.0251 },
+  { code: "AUSYD", name: "Sydney", country: "Australia", lat: -33.8688, lng: 151.2093 },
+  { code: "AUMEL", name: "Melbourne", country: "Australia", lat: -37.8136, lng: 144.9631 },
+  { code: "AUFRE", name: "Fremantle", country: "Australia", lat: -32.0567, lng: 115.7478 },
+  { code: "NZAKL", name: "Auckland", country: "New Zealand", lat: -36.8509, lng: 174.7645 },
+  { code: "NZWLG", name: "Wellington", country: "New Zealand", lat: -41.2866, lng: 174.7756 }
 ]
 
 // Vessel and cargo mapping based on Yieldstreet
@@ -80,6 +162,62 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
     Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return R * c
+}
+
+// Add this new component for the searchable port select
+const SearchablePortSelect = ({ value, onValueChange, className, ref }: { 
+  value: string, 
+  onValueChange: (value: string) => void,
+  className?: string,
+  ref?: React.Ref<HTMLButtonElement>
+}) => {
+  const [search, setSearch] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
+  // Focus the search input when dropdown opens
+  // Use a trick: when the dropdown is rendered, focus the input
+  // This effect runs every time the dropdown is open (because the input is mounted/unmounted)
+  // This works because SelectContent is only rendered when open
+  React.useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  })
+  const filteredPorts = ports.filter(port => 
+    port.name.toLowerCase().includes(search.toLowerCase()) ||
+    port.code.toLowerCase().includes(search.toLowerCase()) ||
+    port.country.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger className={className} ref={ref}>
+        <SelectValue placeholder="Select port" />
+      </SelectTrigger>
+      <SelectContent className="!min-w-[90vw] sm:!min-w-[320px] !max-w-full">
+        <div className="px-3 pb-2">
+          <Input
+            ref={inputRef}
+            placeholder="Search ports..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-12 text-lg md:text-base md:h-8"
+            style={{ fontSize: '1.1rem', padding: '0.75rem 0.75rem' }}
+            autoFocus
+          />
+        </div>
+        <div className="max-h-[60vh] overflow-y-auto">
+          {filteredPorts.map((port) => (
+            <SelectItem key={port.code} value={port.code} className="py-4 px-3 md:py-2 md:px-2 text-lg md:text-base">
+              <div className="flex flex-col">
+                <span>{port.name}</span>
+                <span className="text-xs text-gray-500">{port.country} ({port.code})</span>
+              </div>
+            </SelectItem>
+          ))}
+        </div>
+      </SelectContent>
+    </Select>
+  )
 }
 
 export default function VoyageEstimator() {
@@ -325,24 +463,12 @@ export default function VoyageEstimator() {
               {portsInRoute.map((portObj, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <Label className="text-xs">Port {idx + 1}</Label>
-                  <Select
+                  <SearchablePortSelect
                     value={portObj.code}
                     onValueChange={(val) => { updatePortCode(idx, val); clearHighlight(`port${idx}`) }}
-                  >
-                    <SelectTrigger
-                      className={`h-9 w-40${highlighted[`port${idx}`] ? ' ring-2 ring-red-500' : ''}`}
-                      ref={(el) => { portsRefs.current[idx] = el }}
-                    >
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ports.map((port) => (
-                        <SelectItem key={port.code} value={port.code}>
-                          {port.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    className={`h-9 w-64${highlighted[`port${idx}`] ? ' ring-2 ring-red-500' : ''}`}
+                    ref={(el) => { portsRefs.current[idx] = el }}
+                  />
                   <Select value={portObj.op} onValueChange={(val) => updatePortOp(idx, val as any)}>
                     <SelectTrigger className="h-9 w-28">
                       <SelectValue placeholder="Type" />
