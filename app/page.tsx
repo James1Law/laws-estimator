@@ -93,7 +93,6 @@ export default function VoyageEstimator() {
   const [rate, setRate] = useState("")
   const [fuelPrice, setFuelPrice] = useState("")
   const [commission, setCommission] = useState("2.5")
-  const [voyageDays, setVoyageDays] = useState("14")
 
   const [flatRate, setFlatRate] = useState("0.01")
   const [worldscaleYear, setWorldscaleYear] = useState("2025")
@@ -248,8 +247,11 @@ export default function VoyageEstimator() {
     const commissionCost = grossRevenue * (Number.parseFloat(commission) / 100)
     const netRevenue = grossRevenue - commissionCost
 
+    // Calculate voyage days automatically
+    const speed = 12 // knots
+    const voyageDaysNum = totalDistance / (speed * 24)
+
     // Calculate TCE
-    const voyageDaysNum = Number.parseFloat(voyageDays)
     const tce = (netRevenue - fuelCost) / voyageDaysNum
 
     setResults({
@@ -262,6 +264,7 @@ export default function VoyageEstimator() {
       commissionCost: Math.round(commissionCost),
       netRevenue: Math.round(netRevenue),
       tce: Math.round(tce),
+      voyageDays: Math.round(voyageDaysNum * 10) / 10,
       loadPortName: selectedPorts[0].name,
       dischargePortName: selectedPorts[selectedPorts.length - 1].name,
     })
@@ -285,7 +288,6 @@ export default function VoyageEstimator() {
     setRate("")
     setFuelPrice("")
     setCommission("2.5")
-    setVoyageDays("14")
     setFlatRate("0.01")
     setWorldscaleYear("2025")
     setFixedDiff("0.00")
@@ -587,16 +589,6 @@ export default function VoyageEstimator() {
                 />
               </div>
             </div>
-
-            <div>
-              <Label className="text-xs">Voyage Days</Label>
-              <Input
-                type="number"
-                placeholder="14"
-                value={voyageDays}
-                onChange={(e) => setVoyageDays(e.target.value)}
-              />
-            </div>
           </CardContent>
         </Card>
 
@@ -661,6 +653,34 @@ export default function VoyageEstimator() {
                   <div className="flex justify-between text-red-600">
                     <span>Fuel Cost:</span>
                     <span className="font-bold">${results.fuelCost.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Voyage Days:</span>
+                    <span className="font-medium">{results.voyageDays}</span>
+                  </div>
+                </div>
+                <div className="mt-3 p-2 rounded bg-blue-50 border border-blue-200 text-xs">
+                  <div>
+                    <span className="font-semibold">Calculation Details:</span>
+                  </div>
+                  <div>Speed used: <span className="font-mono">12 knots</span></div>
+                  <div>
+                    Daily consumption (laden):{" "}
+                    <span className="font-mono">
+                      {vesselTypes.find((v) => v.name === vesselType)?.consumption.laden ?? '-'} MT/day
+                    </span>
+                  </div>
+                  <div>
+                    Daily consumption (ballast):{" "}
+                    <span className="font-mono">
+                      {vesselTypes.find((v) => v.name === vesselType)?.consumption.ballast ?? '-'} MT/day
+                    </span>
+                  </div>
+                  <div className="mt-1 text-gray-500">
+                    <span className="font-semibold">Formula:</span> <br />
+                    <span>
+                      Fuel (MT) = (Laden nm / 24 / 12) × Laden MT/day + (Ballast nm / 24 / 12) × Ballast MT/day
+                    </span>
                   </div>
                 </div>
               </div>
