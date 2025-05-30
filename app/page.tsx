@@ -1,14 +1,15 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Ship, MapPin, Fuel, DollarSign, Calculator, TrendingUp, X } from "lucide-react"
+import { Ship, MapPin, Fuel, DollarSign, Calculator, TrendingUp, X, Share2 } from "lucide-react"
 import React from "react"
+import { useToast, toast } from "@/components/ui/use-toast"
 
 // Sample data - in a real app this would come from APIs
 const ports = [
@@ -202,7 +203,12 @@ const AutocompletePortInput = ({ value, onChange, className, inputRef, placehold
 
   // When value changes externally, update search
   React.useEffect(() => {
-    if (!value) setSearch("")
+    if (!value) {
+      setSearch("")
+    } else {
+      const port = ports.find(p => p.code === value)
+      setSearch(port ? port.name : value)
+    }
   }, [value])
 
   return (
@@ -245,6 +251,7 @@ const AutocompletePortInput = ({ value, onChange, className, inputRef, placehold
 }
 
 export default function VoyageEstimator() {
+  const { toast } = useToast()
   const [portsInRoute, setPortsInRoute] = useState<{ code: string, op: 'load' | 'discharge' | 'both' | 'none' }[]>([{ code: '', op: 'none' }, { code: '', op: 'none' }])
   const [loadPort, setLoadPort] = useState("")
   const [dischargePort, setDischargePort] = useState("")
@@ -461,6 +468,86 @@ export default function VoyageEstimator() {
       }
     }, 100)
   }
+
+  const generateShareableUrl = () => {
+    const params = new URLSearchParams()
+    
+    // Add ports and their operations
+    params.set('ports', JSON.stringify(portsInRoute))
+    
+    // Add other form values
+    params.set('vesselType', vesselType)
+    params.set('cargoType', cargoType)
+    params.set('cargoQuantity', cargoQuantity)
+    params.set('rateType', rateType)
+    params.set('rate', rate)
+    params.set('fuelPrice', fuelPrice)
+    params.set('commission', commission)
+    params.set('flatRate', flatRate)
+    params.set('worldscaleYear', worldscaleYear)
+    params.set('fixedDiff', fixedDiff)
+    
+    // Add results
+    if (results) {
+      params.set('results', JSON.stringify(results))
+    }
+    
+    return `${window.location.origin}${window.location.pathname}?${params.toString()}`
+  }
+
+  const handleShare = async () => {
+    console.log('Share button clicked')
+    const shareUrl = generateShareableUrl()
+    console.log('Generated share URL:', shareUrl)
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast({
+        title: "Link copied!",
+        description: "Share this link to show your voyage calculation",
+      })
+    } catch (err) {
+      console.error('Clipboard error:', err)
+      toast({
+        title: "Failed to copy",
+        description: "Please try copying the link manually",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Add URL parameter handling
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    
+    if (params.has('ports')) {
+      try {
+        const ports = JSON.parse(params.get('ports') || '[]')
+        setPortsInRoute(ports)
+      } catch (e) {
+        console.error('Failed to parse ports from URL')
+      }
+    }
+    
+    if (params.has('vesselType')) setVesselType(params.get('vesselType') || '')
+    if (params.has('cargoType')) setCargoType(params.get('cargoType') || '')
+    if (params.has('cargoQuantity')) setCargoQuantity(params.get('cargoQuantity') || '')
+    if (params.has('rateType')) setRateType(params.get('rateType') || '')
+    if (params.has('rate')) setRate(params.get('rate') || '')
+    if (params.has('fuelPrice')) setFuelPrice(params.get('fuelPrice') || '')
+    if (params.has('commission')) setCommission(params.get('commission') || '')
+    if (params.has('flatRate')) setFlatRate(params.get('flatRate') || '')
+    if (params.has('worldscaleYear')) setWorldscaleYear(params.get('worldscaleYear') || '')
+    if (params.has('fixedDiff')) setFixedDiff(params.get('fixedDiff') || '')
+    
+    if (params.has('results')) {
+      try {
+        const results = JSON.parse(params.get('results') || '{}')
+        setResults(results)
+      } catch (e) {
+        console.error('Failed to parse results from URL')
+      }
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 p-4">
@@ -875,6 +962,16 @@ export default function VoyageEstimator() {
                 >
                   {results.tce > 15000 ? "Excellent" : results.tce > 10000 ? "Good" : "Poor"}
                 </Badge>
+                
+                {/* Share Button */}
+                <Button
+                  onClick={handleShare}
+                  className="mt-4 w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                  size="sm"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share Results
+                </Button>
               </div>
             </CardContent>
           </Card>
