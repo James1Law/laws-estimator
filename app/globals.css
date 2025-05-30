@@ -92,3 +92,23 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.port-input-style {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+  border-radius: 0.375rem; /* Tailwind rounded-md */
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+.port-input-style:focus {
+  outline: none;
+  border-color: #2563eb; /* Tailwind blue-600 */
+  box-shadow: 0 0 0 2px #2563eb33;
+}

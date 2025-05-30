@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Ship, MapPin, Fuel, DollarSign, Calculator, TrendingUp } from "lucide-react"
+import { Ship, MapPin, Fuel, DollarSign, Calculator, TrendingUp, X } from "lucide-react"
 import React from "react"
 
 // Sample data - in a real app this would come from APIs
@@ -164,59 +164,83 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c
 }
 
-// Add this new component for the searchable port select
-const SearchablePortSelect = ({ value, onValueChange, className, ref }: { 
-  value: string, 
-  onValueChange: (value: string) => void,
+// AutocompletePortInput: custom typeahead for port selection
+const AutocompletePortInput = ({ value, onChange, className, inputRef, placeholder }: {
+  value: string,
+  onChange: (val: string) => void,
   className?: string,
-  ref?: React.Ref<HTMLButtonElement>
+  inputRef?: React.Ref<HTMLInputElement>,
+  placeholder?: string
 }) => {
   const [search, setSearch] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
-  // Focus the search input when dropdown opens
-  // Use a trick: when the dropdown is rendered, focus the input
-  // This effect runs every time the dropdown is open (because the input is mounted/unmounted)
-  // This works because SelectContent is only rendered when open
+  const [showDropdown, setShowDropdown] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Filter ports only if 3+ chars
+  const filteredPorts = search.length >= 3
+    ? ports.filter(port =>
+        port.name.toLowerCase().includes(search.toLowerCase()) ||
+        port.code.toLowerCase().includes(search.toLowerCase()) ||
+        port.country.toLowerCase().includes(search.toLowerCase())
+      )
+    : []
+
+  // Handle outside click to close dropdown
   React.useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus()
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
     }
-  })
-  const filteredPorts = ports.filter(port => 
-    port.name.toLowerCase().includes(search.toLowerCase()) ||
-    port.code.toLowerCase().includes(search.toLowerCase()) ||
-    port.country.toLowerCase().includes(search.toLowerCase())
-  )
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClick)
+    } else {
+      document.removeEventListener('mousedown', handleClick)
+    }
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showDropdown])
+
+  // When value changes externally, update search
+  React.useEffect(() => {
+    if (!value) setSearch("")
+  }, [value])
 
   return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className={className} ref={ref}>
-        <SelectValue placeholder="Select port" />
-      </SelectTrigger>
-      <SelectContent className="!min-w-[90vw] sm:!min-w-[320px] !max-w-full">
-        <div className="px-3 pb-2">
-          <Input
-            ref={inputRef}
-            placeholder="Search ports..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-12 text-lg md:text-base md:h-8"
-            style={{ fontSize: '1.1rem', padding: '0.75rem 0.75rem' }}
-            autoFocus
-          />
-        </div>
-        <div className="max-h-[60vh] overflow-y-auto">
-          {filteredPorts.map((port) => (
-            <SelectItem key={port.code} value={port.code} className="py-4 px-3 md:py-2 md:px-2 text-lg md:text-base">
-              <div className="flex flex-col">
-                <span>{port.name}</span>
-                <span className="text-xs text-gray-500">{port.country} ({port.code})</span>
-              </div>
-            </SelectItem>
+    <div ref={containerRef} className="relative w-full">
+      <Input
+        ref={inputRef}
+        value={search}
+        onChange={e => {
+          setSearch(e.target.value)
+          onChange("") // Clear selection until user picks
+          setShowDropdown(true)
+        }}
+        onFocus={() => setShowDropdown(true)}
+        placeholder={placeholder || "Type at least 3 letters..."}
+        className={className + " !w-64 md:!w-64"}
+        autoComplete="off"
+        spellCheck={false}
+      />
+      {showDropdown && filteredPorts.length > 0 && (
+        <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          {filteredPorts.map(port => (
+            <div
+              key={port.code}
+              className="px-4 py-2 cursor-pointer hover:bg-blue-50"
+              onMouseDown={e => { e.preventDefault(); onChange(port.code); setSearch(port.name); setShowDropdown(false) }}
+            >
+              <div className="font-medium text-gray-900">{port.name}</div>
+              <div className="text-xs text-gray-500">{port.country} ({port.code})</div>
+            </div>
           ))}
         </div>
-      </SelectContent>
-    </Select>
+      )}
+      {showDropdown && search.length >= 3 && filteredPorts.length === 0 && (
+        <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div className="px-4 py-2 text-gray-500 text-sm">No matching ports</div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -461,30 +485,40 @@ export default function VoyageEstimator() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               {portsInRoute.map((portObj, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <Label className="text-xs">Port {idx + 1}</Label>
-                  <SearchablePortSelect
-                    value={portObj.code}
-                    onValueChange={(val) => { updatePortCode(idx, val); clearHighlight(`port${idx}`) }}
-                    className={`h-9 w-64${highlighted[`port${idx}`] ? ' ring-2 ring-red-500' : ''}`}
-                    ref={(el) => { portsRefs.current[idx] = el }}
-                  />
-                  <Select value={portObj.op} onValueChange={(val) => updatePortOp(idx, val as any)}>
-                    <SelectTrigger className="h-9 w-28">
-                      <SelectValue placeholder="Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      <SelectItem value="load">Load</SelectItem>
-                      <SelectItem value="discharge">Discharge</SelectItem>
-                      <SelectItem value="both">Both</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div key={idx} className="relative flex flex-col gap-2 w-full bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                  {/* Remove Port Button (X icon) */}
                   {portsInRoute.length > 2 && (
-                    <Button type="button" size="icon" variant="outline" onClick={() => removePort(idx)}>
-                      -
-                    </Button>
+                    <button
+                      type="button"
+                      aria-label="Remove port"
+                      onClick={() => removePort(idx)}
+                      className="absolute top-2 right-2 p-1 rounded-full hover:bg-red-100 focus:bg-red-200 transition-colors border border-transparent focus:outline-none focus:ring-2 focus:ring-red-400"
+                    >
+                      <X className="h-4 w-4 text-red-500" />
+                    </button>
                   )}
+                  <Label className="text-xs">Port {idx + 1}</Label>
+                  <AutocompletePortInput
+                    value={portObj.code}
+                    onChange={val => { updatePortCode(idx, val); clearHighlight(`port${idx}`) }}
+                    className={`port-input-style${highlighted[`port${idx}`] ? ' ring-2 ring-red-500' : ''}`}
+                    placeholder="Type at least 3 letters..."
+                  />
+                  <div className="flex flex-wrap gap-3 mt-1">
+                    {['none', 'load', 'discharge', 'both'].map((op) => (
+                      <label key={op} className="flex items-center gap-1 text-sm cursor-pointer">
+                        <input
+                          type="radio"
+                          name={`port-op-${idx}`}
+                          value={op}
+                          checked={portObj.op === op}
+                          onChange={() => updatePortOp(idx, op as any)}
+                          className="accent-blue-600"
+                        />
+                        {op.charAt(0).toUpperCase() + op.slice(1)}
+                      </label>
+                    ))}
+                  </div>
                 </div>
               ))}
               <Button type="button" variant="secondary" onClick={addPort} className="mt-2">+ Add Port</Button>
